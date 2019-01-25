@@ -9,6 +9,7 @@ import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
+import Cube from './geometry/Cube';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
@@ -21,6 +22,7 @@ const controls = {
 
 let icosphere: Icosphere;
 let square: Square;
+let cube: Cube;
 let prevTesselations: number = 5;
 let prevColor: number[] = [1,0,0];
 
@@ -29,6 +31,8 @@ function loadScene() {
   icosphere.create();
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
+  cube = new Cube(vec3.fromValues(0,0,0));
+  cube.create();
 }
 
 function main() {
@@ -92,11 +96,11 @@ function main() {
       prevColor = controls.color;
     }
     renderer.render(camera, lambert, [
-        icosphere,
-        // square,
-      ], vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1));
-      stats.end();
-    }
+      //icosphere,
+      //square,
+      cube
+    ], vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1));
+    stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame
     requestAnimationFrame(tick);
