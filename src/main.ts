@@ -16,6 +16,7 @@ const controls = {
   'Load Scene': loadScene, // A function pointer, essentially
   color: [1,0,0],
   customShader: false,
+  object: 1,
 };
 
 let icosphere: Icosphere;
@@ -24,14 +25,24 @@ let cube: Cube;
 let prevTesselations: number = 5;
 let prevColor: number[] = [1,0,0];
 let time: number = 0;
+let prevObj: number = 1;
+let tessChange: boolean = false;
 
 function loadScene() {
-  icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
-  icosphere.create();
-  square = new Square(vec3.fromValues(0, 0, 0));
-  square.create();
-  cube = new Cube(vec3.fromValues(0,0,0));
-  cube.create();
+  if (prevObj == 1) {
+    cube = new Cube(vec3.fromValues(0,0,0));
+    cube.create();
+  }
+  else if (prevObj == 2) {
+    icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, prevTesselations);
+    console.log(`control ${controls.tesselations}`);
+    console.log(`control ${prevTesselations}`);
+    icosphere.create();
+  }
+  else {
+    square = new Square(vec3.fromValues(0, 0, 0));
+    square.create();
+  }
 }
 
 function main() {
@@ -49,6 +60,7 @@ function main() {
   gui.add(controls, 'Load Scene');
   gui.addColor(controls, 'color');
   gui.add(controls, 'customShader');
+  gui.add(controls, 'object', 1, 3).step(1);
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -77,6 +89,7 @@ function main() {
     new Shader(gl.VERTEX_SHADER, require('./shaders/deform-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/deform-frag.glsl')),
   ]);
+  let shaderProg: ShaderProgram = lambert;
 
   // This function will be called every frame
   function tick() {
@@ -90,6 +103,7 @@ function main() {
       prevTesselations = controls.tesselations;
       icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, prevTesselations);
       icosphere.create();
+      tessChange = true;
     }
     if(controls.color != prevColor) {
       //update color
@@ -97,14 +111,34 @@ function main() {
     }
     if(controls.customShader == true) {
       //render with custom shader
-      renderer.render(camera, custom, [cube], 
-                      vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
+      shaderProg = custom;
     }
     else {
       //render with lambert shader
-      renderer.render(camera, lambert, [cube], 
-                      vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
+      shaderProg = lambert;
     }
+    if(controls.object != prevObj || tessChange) {
+      //update obj
+      if (tessChange) {
+        console.log(`tess changed`);
+      }
+      prevObj = controls.object;
+      tessChange = false;
+      loadScene();
+    }
+    if (prevObj == 1) {
+      renderer.render(camera, shaderProg, [cube], 
+        vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
+    }
+    else if(prevObj == 2) {
+      renderer.render(camera, shaderProg, [icosphere], 
+        vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
+    }
+    else {
+      renderer.render(camera, shaderProg, [square], 
+        vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
+    }
+      
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame
