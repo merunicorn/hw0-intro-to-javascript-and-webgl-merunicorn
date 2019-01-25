@@ -1,7 +1,5 @@
 import {vec3, vec4} from 'gl-matrix';
-//import * as Stats from 'stats-js';
-import Stats = require("stats.js");
-console.log(Stats)
+import * as Stats from 'stats-js';
 import * as DAT from 'dat-gui';
 import Icosphere from './geometry/Icosphere';
 import Square from './geometry/Square';
@@ -9,7 +7,7 @@ import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
-import Cube from './geometry/Cube';
+import Cube from './geometry/cube';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
@@ -25,6 +23,7 @@ let square: Square;
 let cube: Cube;
 let prevTesselations: number = 5;
 let prevColor: number[] = [1,0,0];
+let time: number = 0;
 
 function loadScene() {
   icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
@@ -49,7 +48,7 @@ function main() {
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
   gui.addColor(controls, 'color');
-  gui.add(controls, 'custom shader');
+  gui.add(controls, 'customShader');
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -74,14 +73,14 @@ function main() {
     new Shader(gl.VERTEX_SHADER, require('./shaders/lambert-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/lambert-frag.glsl')),
   ]);
-
   const custom = new ShaderProgram([
-    new Shader(gl.VERTEX_SHADER, require('./shaders/lambert-vert.glsl')),
-    new Shader(gl.FRAGMENT_SHADER, require('./shaders/lambert-frag.glsl')),
+    new Shader(gl.VERTEX_SHADER, require('./shaders/deform-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/deform-frag.glsl')),
   ]);
 
   // This function will be called every frame
   function tick() {
+    time++;
     camera.update();
     stats.begin();
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
@@ -95,11 +94,18 @@ function main() {
     if(controls.color != prevColor) {
       prevColor = controls.color;
     }
-    renderer.render(camera, lambert, [
-      //icosphere,
-      //square,
-      cube
-    ], vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1));
+    if(controls.customShader == true) {
+      //render with custom shader
+      renderer.render(camera, custom, [cube], 
+                      vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
+    }
+    else {
+      renderer.render(camera, lambert, [
+        //icosphere,
+        //square,
+        cube
+      ], vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
+    }
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame
