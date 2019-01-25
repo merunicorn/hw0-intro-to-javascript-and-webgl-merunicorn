@@ -92,6 +92,7 @@ function main() {
       icosphere.create();
     }
     if(controls.color != prevColor) {
+      //update color
       prevColor = controls.color;
     }
     if(controls.customShader == true) {
@@ -100,11 +101,9 @@ function main() {
                       vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
     }
     else {
-      renderer.render(camera, lambert, [
-        //icosphere,
-        //square,
-        cube
-      ], vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
+      //render with lambert shader
+      renderer.render(camera, lambert, [cube], 
+                      vec4.fromValues(prevColor[0],prevColor[1],prevColor[2],1), time);
     }
     stats.end();
 

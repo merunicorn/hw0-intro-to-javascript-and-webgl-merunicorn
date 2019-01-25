@@ -20,19 +20,21 @@ void main()
 {
     vec4 diffuseColor = u_Color;
     float t = dot(normalize(fs_Nor), normalize(fs_LightVec));
-    t = clamp(t, 0.0, 1.0);
 
     vec3 a, b, c, d;
-    a = vec3(0.068, 0.428, 0.318);
-    b = vec3(0.988, 0.238, 0.358);
-    c = vec3(1.961, 1.08, 0.325);
-    d = vec3(0.517, 0.927, -0.213);
-    float cosX = float(u_Time) * 3.14159 * 0.01;
-    float sinY = float(u_Time) * 3.14159 * 0.01;
-    d *= vec3(cos(cosX),sin(sinY),1);
+    a = vec3(0.498, 1.198, 0.958);
+    b = vec3(1.188, 0.798, 0.158);
+    c = vec3(0.988, 0.768, -0.342);
+    d = vec3(-2.372, 0.278, 0.738);
+    float cosX = float(u_Time) * 3.14159 * 0.04;
+    float sinY = float(u_Time) * 3.14159 * 0.04;
+    d -= (cosX, sinY, cosX);
 
-    out_Col = vec4(a[0] + b[0] + cos(1.3 * 3.14159 * (c[0] * t + d[0])),
-                   a[1] + b[1] + cos(1.3 * 3.14159 * (c[1] * t + d[1])),
-                   a[2] + b[2] + cos(1.3 * 3.14159 * (c[2] * t + d[2])),
+    float difR = diffuseColor.r * 0.5;
+    float difG = diffuseColor.g * 0.5;
+    float difB = diffuseColor.b * 0.5;
+    out_Col = vec4(difR + a[0] + b[0] * cos(1.3 * 3.14159 * t * (c[0] * 1.0 + d[0])),
+                   difG + a[1] + b[1] * cos(1.3 * 3.14159 * t * (c[1] * 1.0 + d[1])),
+                   difB + a[2] + b[2] * cos(1.3 * 3.14159 * t * (c[2] * 1.0 + d[2])),
                    diffuseColor.a);
 }
